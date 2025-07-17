@@ -220,7 +220,7 @@
         const selector = document.getElementById('mdFileSelector');
         const preview = document.getElementById('markdownPreview');
         try {
-            const res = await fetch('/list-md');
+            const res = await fetch('https://markdown-preview-z4s9.onrender.com/list-md');
             const files = await res.json();
             currentFiles = files;
             selector.innerHTML = '';
