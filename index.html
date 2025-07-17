@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Markdown Previewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: white;
+        position: relative;
+        background: #1a1a1a;
+      }
+      .animated-blobs {
+        position: fixed; top: 0; left: 0; z-index: -1;
+        width: 100vw; height: 100vh; overflow: hidden;
+      }
+      .blob { position: absolute; border-radius: 50%; opacity: 0.6; filter: blur(100px); animation: moveBlobs 25s ease-in-out infinite alternate; }
+      .blob:nth-child(1) { width: 400px; height: 400px; background: #ff6ec4; top: -100px; left: -100px; animation-delay: 0s; }
+      .blob:nth-child(2) { width: 300px; height: 300px; background: #4f00bc; top: 60%; left: 70%; animation-delay: 5s; }
+      .blob:nth-child(3) { width: 500px; height: 500px; background: #29abe2; top: 50%; left: -150px; animation-delay: 10s; }
+      @keyframes moveBlobs { 0% { transform: translateY(0px) translateX(0px) scale(1); } 100% { transform: translateY(-50px) translateX(50px) scale(1.2); } }
+      .h1_heading { font-size: 2.5rem; margin: 40px; font-weight: 600; letter-spacing: 1px; text-align: center; z-index: 1; }
+      .glass-card {
+        background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border-radius: 16px; padding: 20px 20px; width: 100%; max-width: 1000px; margin: 20px auto;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        z-index: 1;
+      }
+
+      .glass-card-content {
+        background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border-radius: 16px; padding: 25px 30px; width: 100%; max-width: 800px; margin: 20px auto;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        z-index: 1;
+      }
+      .section-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; }
+      .container { background-color: #ffffff; border-radius: 1.5rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); padding: 2.5rem 3.5rem; transition: all 0.3s ease; width: 100%; max-width: 1000px; }
+      .container:hover { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12); }
+      .section-card { background-color: #f8f9fa; border-radius: 1rem; padding: 2rem; margin-bottom: 2rem; border: 1px solid #e0e0e0; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+      .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #e9ecef; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #adb5bd; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6c757d; }
+      .markdown-content h1 { font-size: 2.8rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #e9ecef; color: #ffffff; font-weight: 700; line-height: 1.2; }
+      .markdown-content h2 { font-size: 2.2rem; margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid #e9ecef; color: #dfe2e6; font-weight: 600; }
+      .markdown-content h3 { font-size: 1.9rem; margin-bottom: 1rem; color: #f3f0ff; font-weight: 600; }
+      .markdown-content h4 { font-size: 1.6rem; margin-bottom: 0.8rem; color: #f3f0ff; font-weight: 500; }
+      .markdown-content h5 { font-size: 1.3rem; margin-bottom: 0.6rem; color: #f3f0ff; font-weight: 500; }
+      .markdown-content h6 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #f3f0ff; font-weight: 500; }
+      .markdown-content p { margin-bottom: 1.2rem; line-height: 1.8; color: #f3f0ff; }
+      .markdown-content ul, .markdown-content ol { margin-left: 2rem; margin-bottom: 1.2rem; color: #f3f0ff; }
+      .markdown-content ul { list-style-type: disc; }
+      .markdown-content ol { list-style-type: decimal; }
+      .markdown-content li { margin-bottom: 0.7rem; line-height: 1.6; }
+      .markdown-content a { color: #007bff; text-decoration: underline; transition: color 0.2s ease-in-out; }
+      .markdown-content a:hover { color: #0056b3; }
+      .markdown-content pre { background-color: #2b2b2b; color: #ebeff3; padding: 1.5rem; border-radius: 0.75rem; overflow-x: auto; margin-bottom: 1.5rem; font-family: 'Fira Code', monospace; line-height: 1.6; box-shadow: 0 4px 8px rgba(0,0,0,0.2);}
+      .markdown-content code { background-color: #e9ecef; color: #c026d3; padding: 0.3rem 0.6rem; border-radius: 0.375rem; font-size: 0.9em; font-family: 'Fira Code', monospace; white-space: nowrap; }
+      .markdown-content pre code { background-color: transparent; color: inherit; padding: 0; border-radius: 0; font-size: 1em; white-space: pre; }
+      .markdown-content blockquote { border-left: 0.4rem solid #6f42c1; padding-left: 1.8rem; color: #495057; margin-bottom: 1.5rem; background-color: #f3f0ff; padding-top: 1rem; padding-bottom: 1rem; border-radius: 0.5rem; font-style: italic; line-height: 1.6; }
+      .markdown-content table { width: 100%; border-collapse: collapse; margin-bottom: 1.8rem; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); border-radius: 0.75rem; overflow: hidden; }
+      .markdown-content th, .markdown-content td { border: 1px solid #dee2e6; padding: 1.2rem 1.5rem; text-align: left; }
+      .markdown-content th { background-color: #e9ecef; font-weight: 700; color: #343a40; text-transform: uppercase; font-size: 0.9em; }
+      .markdown-content tr:nth-child(even) { background-color: #f8f9fa; }
+      .markdown-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin-top: 2rem; margin-bottom: 2rem; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); transition: transform 0.3s ease-in-out; }
+      .markdown-content img:hover { transform: scale(1.01); }
+      .button1 { background: #5c7cfa; color: white; padding: 8px 18px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: background 0.2s ease; }
+      .button1:hover { background: #4263eb; }
+      .edit-btn { background: #ff914d; }
+      .edit-btn:hover { background: #e66e29; }
+      .delete-btn { background: #ff4d4d; }
+      .delete-btn:hover { background: #d11a2a; }
+      .btn-primary { background-color: #007bff; color: white; padding: 0.75rem 1.75rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease-in-out; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);}
+      .btn-primary:hover { background-color: #0056b3; box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3); transform: translateY(-2px);}
+      .btn-primary:focus {outline: none; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);}
+      .btn-secondary {background-color: #6c757d; color: white; padding: 0.75rem 1.75rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease-in-out; box-shadow: 0 4px 10px rgba(108, 117, 125, 0.2);}
+      .btn-secondary:hover {background-color: #5a6268; box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3); transform: translateY(-2px);}
+      .btn-secondary:focus {outline: none; box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.5);}
+      .btn-warning {background-color: #ffc107; color: #212529; padding: 0.75rem 1.75rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease-in-out; box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2);}
+      .btn-warning:hover {background-color: #e0a800; box-shadow: 0 6px 15px rgba(255, 193, 7, 0.3); transform: translateY(-2px);}
+      .btn-warning:focus {outline: none; box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.5);}
+      .btn-danger {background-color: #dc3545; color: white; padding: 0.75rem 1.75rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease-in-out; box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);}
+      .btn-danger:hover {background-color: #c82333; box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3); transform: translateY(-2px);}
+      .btn-danger:focus {outline: none; box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.5);}
+      .file-input-wrapper {display: flex; align-items: center; border: 1px solid #ced4da; border-radius: 0.5rem; background-color: #ffffff; overflow: hidden; flex-grow: 1;}
+      .file-input-button {background-color: #e9ecef; color: #495057; padding: 0.75rem 1.25rem; cursor: pointer; border-right: 1px solid #ced4da; transition: background-color 0.2s ease;}
+      .file-input-button:hover {background-color: #dee2e6;}
+      .file-input-display {flex-grow: 1; padding: 0.75rem 1.25rem; color: #6c757d; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
+      .file-input-hidden {display: none;}
+      .msg-success {background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 0.75rem 1.25rem; border-radius: 0.5rem;}
+      .msg-error {background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 0.75rem 1.25rem; border-radius: 0.5rem;}
+      .msg-info {background-color: #cce5ff; color: #004085; border: 1px solid #b8daff; padding: 0.75rem 1.25rem; border-radius: 0.5rem;}
+    </style>
+</head>
+<body>
+  <!-- Blobs Background -->
+  <div class="animated-blobs">
+    <div class="blob"></div>
+    <div class="blob"></div>
+    <div class="blob"></div>
+  </div>
+
+  <h1 class="h1_heading">MARKDOWN PREVIEWER</h1>
+
+  <!-- MAIN LAYOUT -->
+  <div class="flex flex-col md:flex-row  mx-auto w-full md:mt-8 md:shadow-xl">
+
+    <!-- SIDEBAR -->
+<aside class="fixed top-0 left-0 h-screen md:w-1/4 w-full flex-shrink-0 flex flex-col gap-6 md:gap-10 p-4 md:p-6 overflow-hidden z-10 backdrop-blur-lg shadow-lg">
+      <!-- Upload section -->
+       <div class="glass-card h-full">
+      <div class="glass-card mb-2 md:mb-0">
+        <div class="section-title">Upload a Markdown File</div>
+        <form id="uploadForm" class="flex flex-col gap-4">
+          <div class="file-input-wrapper flex-grow">
+            <label for="mdFileUpload" class="file-input-button">Choose File</label>
+            <input type="file" id="mdFileUpload" accept=".md,text/markdown" class="file-input-hidden">
+            <span id="fileNameDisplay" class="file-input-display">No file chosen</span>
+          </div>
+          <button type="submit" class="btn-primary flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.2 15.6l-3.7-3.7c-.8-.8-2-.8-2.8 0L9.2 17.2c-.8.8-2 .8-2.8 0L2.8 12.8c-.8-.8-2-.8-2.8 0L0 13.2"/>
+              <path d="M12 20v-8M17 15l-5-5-5 5"/>
+            </svg>
+            Upload
+          </button>
+        </form>
+        <div id="uploadMsg" class="mt-4 text-sm font-medium"></div>
+      </div>
+
+      <!-- Dropdown Section -->
+      <div class="glass-card">
+        <div class="section-title">Choose an Existing File</div>
+        <select id="mdFileSelector"
+                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg
+                       transition-all duration-200 ease-in-out bg-white hover:border-gray-400 cursor-pointer">
+          <option value="">Loading files...</option>
+        </select>
+      </div>
+      </div>
+    </aside>
+
+    <!-- MAIN PREVIEW/EDITOR AREA -->
+    <main class="flex-grow ml-0 md:ml-[25%] mt-6 md:mt-0">
+      <div class="glass-card-content min-h-[600px] flex flex-col h-full">
+        <div class="flex justify-between">
+          <div class="section-title">Markdown Content</div>
+          <div id="mdActions" class="mb-6 flex flex-wrap gap-4">
+            <button id="editBtn" class="button1 edit-btn">Edit</button>
+            <button id="deleteBtn" class="button1 delete-btn">Delete</button>
+            <button id="saveBtn" style="display:none" class="btn-primary flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Save Changes
+            </button>
+            <button id="cancelEditBtn" style="display:none" class="btn-secondary flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Cancel
+            </button>
+          </div>
+        </div>
+        <div id="markdownPreview" class="markdown-content text-white flex-grow custom-scrollbar p-4 -m-4">
+          <p class="text-white text-lg">Select a Markdown file or upload one to see its beautiful preview here.</p>
+        </div>
+        <textarea id="mdEditor"
+                  class="w-full mt-6 p-5 border border-gray-300 rounded-lg shadow-inner font-mono text-base resize-y min-h-[250px] focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
+                  style="display:none"
+        ></textarea>
+        <div id="actionMsg" class="mt-4 text-base font-semibold"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    let currentFiles = [];
+    // Helper to update message styles
+    function updateMessage(divId, text, type) {
+        const msgDiv = document.getElementById(divId);
+        msgDiv.textContent = text;
+        msgDiv.className = `mt-4 text-sm font-medium p-3 rounded-md ${
+            type === 'success' ? 'msg-success' :
+            type === 'error' ? 'msg-error' :
+            type === 'info' ? 'msg-info' : ''
+        }`;
+    }
+    // Custom file input display
+    document.getElementById('mdFileUpload').addEventListener('change', function() {
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = this.files[0].name;
+        } else {
+            fileNameDisplay.textContent = 'No file chosen';
+        }
+    });
+    // Fetch the Markdown file list and update the UI
+    async function loadMarkdownFiles(selectedFile = null) {
+        const selector = document.getElementById('mdFileSelector');
+        const preview = document.getElementById('markdownPreview');
+        try {
+            const res = await fetch('/list-md');
+            const files = await res.json();
+            currentFiles = files;
+            selector.innerHTML = '';
+            if (!files.length) {
+                selector.innerHTML = '<option value="">No Markdown files found.</option>';
+                preview.innerHTML = '<p class="text-gray-100 text-lg">No Markdown files (.md) found in this directory. Upload one to get started!</p>';
+                return;
+            }
+            files.forEach((file) => {
+                const opt = document.createElement('option');
+                opt.value = file;
+                opt.textContent = file;
+                selector.appendChild(opt);
+            });
+            // Preview the chosen file or the first one
+            if(selectedFile && files.includes(selectedFile)){
+                selector.value = selectedFile;
+                previewMarkdownFile(selectedFile);
+            } else if (files.length > 0) {
+                selector.value = files[0];
+                previewMarkdownFile(files[0]);
+            } else {
+                preview.innerHTML = '<p class="text-gray-100 text-lg">Select a Markdown file to see its preview.</p>';
+            }
+        } catch (err) {
+            console.error("Error loading Markdown files:", err);
+            selector.innerHTML = '<option value="">Error loading file list</option>';
+            preview.innerHTML = '<p class="text-red-500 font-medium text-lg">Could not fetch Markdown file list. Please try again later.</p>';
+        }
+    }
+    // Fetch and render selected file
+    async function previewMarkdownFile(filename) {
+        const preview = document.getElementById('markdownPreview');
+        if (!filename) {
+            preview.innerHTML = '<p class="text-gray-100 text-lg">Select a Markdown file to see its preview.</p>';
+            return;
+        }
+        preview.innerHTML = '<p class="text-gray-200 text-lg">Loading preview...</p>';
+        try {
+            const res = await fetch(`/${filename}`);
+            if (!res.ok) {
+                if (res.status === 404) {
+                    throw new Error(`File not found: ${filename}`);
+                }
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const md = await res.text();
+            preview.innerHTML = marked.parse(md);
+        } catch (err) {
+            console.error(`Error loading or parsing file ${filename}:`, err);
+            preview.innerHTML = `<p class="text-red-500 font-medium text-lg">Could not load file: ${filename}. ${err.message}</p>`;
+        }
+    }
+    // Handle dropdown selection and initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMarkdownFiles();
+        document.getElementById('mdFileSelector').addEventListener('change', function() {
+            previewMarkdownFile(this.value);
+            // If editing, reset mode when a new file is selected
+            if (isEditing) setEditingMode(false);
+        });
+        // Handle Upload
+        document.getElementById('uploadForm').addEventListener('submit', async function(e){
+            e.preventDefault();
+            const fileInput = document.getElementById('mdFileUpload');
+            const msgDivId = 'uploadMsg';
+            const file = fileInput.files[0];
+            if (!file) {
+                updateMessage(msgDivId, 'Please select a file to upload.', 'error');
+                return;
+            }
+            if (!file.name.endsWith('.md')) {
+                updateMessage(msgDivId, 'Please select a .md file. Other file types are not supported.', 'error');
+                return;
+            }
+            updateMessage(msgDivId, 'Uploading...', 'info');
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(`Upload failed: ${errorText || res.statusText}`);
+                }
+                const json = await res.json();
+                updateMessage(msgDivId, `File "${json.filename}" uploaded successfully!`, 'success');
+                fileInput.value = ''; // Clear file input
+                document.getElementById('fileNameDisplay').textContent = 'No file chosen'; // Reset display
+                await loadMarkdownFiles(json.filename);
+            } catch (err) {
+                console.error('Error during upload:', err);
+                updateMessage(msgDivId, `Error uploading file: ${err.message}`, 'error');
+            }
+        });
+        // ---- Edit/Delete Feature ----
+        let isEditing = false;
+        let originalMd = "";
+        const editor = document.getElementById('mdEditor');
+        const previewDiv = document.getElementById('markdownPreview');
+        const editBtn = document.getElementById('editBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const actionMsgId = 'actionMsg';
+        const fileSelector = document.getElementById('mdFileSelector');
+        function setEditingMode(editing) {
+            isEditing = editing;
+            editor.style.display = editing ? 'block' : 'none';
+            previewDiv.style.display = editing ? 'none' : 'block';
+            saveBtn.style.display = editing ? 'flex' : 'none';
+            cancelEditBtn.style.display = editing ? 'flex' : 'none';
+            editBtn.style.display = editing ? 'none' : 'flex';
+            deleteBtn.style.display = editing ? 'none' : 'flex';
+            updateMessage(actionMsgId, '', 'info'); // Clear action message
+        }
+        // Edit Button
+        editBtn.addEventListener('click', async () => {
+            const filename = fileSelector.value;
+            if (!filename) {
+                updateMessage(actionMsgId, 'Please select a file to edit.', 'error');
+                return;
+            }
+            updateMessage(actionMsgId, 'Loading file content for editing...', 'info');
+            try {
+                const res = await fetch(`/${filename}`);
+                if (!res.ok) throw new Error("Could not load file content.");
+                originalMd = await res.text();
+                editor.value = originalMd;
+                setEditingMode(true);
+            } catch (err) {
+                updateMessage(actionMsgId, `Failed to load file content: ${err.message}`, 'error');
+            }
+        });
+        // Cancel Button
+        cancelEditBtn.addEventListener('click', () => {
+            editor.value = ''; // Clear editor
+            setEditingMode(false);
+            // Re-render the preview with the original content
+            const filename = fileSelector.value;
+            if (filename) previewMarkdownFile(filename);
+            updateMessage(actionMsgId, 'Edit cancelled.', 'info');
+        });
+        // Save Button
+        saveBtn.addEventListener('click', async () => {
+            const filename = fileSelector.value;
+            if (!filename) return;
+            const newContent = editor.value;
+            saveBtn.disabled = true;
+            updateMessage(actionMsgId, 'Saving changes...', 'info');
+            try {
+                const res = await fetch('/edit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ filename, content: newContent })
+                });
+                const resJson = await res.json();
+                if (!res.ok) throw new Error(resJson.error || 'Failed to save');
+                setEditingMode(false);
+                updateMessage(actionMsgId, "Saved successfully!", 'success');
+                previewMarkdownFile(filename); // Reload preview with new content
+            } catch (err) {
+                updateMessage(actionMsgId, `Failed to save: ${err.message}`, 'error');
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+        // Delete Button
+        deleteBtn.addEventListener('click', async () => {
+            const filename = fileSelector.value;
+            if (!filename) {
+                updateMessage(actionMsgId, 'Please select a file to delete.', 'error');
+                return;
+            }
+            if (!confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) return;
+            deleteBtn.disabled = true;
+            updateMessage(actionMsgId, 'Deleting file...', 'info');
+            try {
+                const res = await fetch('/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ filename })
+                });
+                const resJson = await res.json();
+                if (!res.ok) throw new Error(resJson.error || 'Failed to delete');
+                updateMessage(actionMsgId, 'File deleted successfully.', 'success');
+                await loadMarkdownFiles(); // Reload file list
+            } catch (err) {
+                updateMessage(actionMsgId, `Failed to delete: ${err.message}`, 'error');
+            } finally {
+                deleteBtn.disabled = false;
+            }
+        });
+    });
+  </script>
+</body>
+</html>

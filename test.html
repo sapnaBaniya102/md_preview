@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Markdown Previewer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: white;
+      position: relative;
+      background: #1a1a1a;
+    }
+
+    /* Blobs container */
+    .animated-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.6;
+      filter: blur(100px);
+      animation: moveBlobs 25s ease-in-out infinite alternate;
+    }
+
+    .blob:nth-child(1) {
+      width: 400px;
+      height: 400px;
+      background: #ff6ec4;
+      top: -100px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .blob:nth-child(2) {
+      width: 300px;
+      height: 300px;
+      background: #4f00bc;
+      top: 60%;
+      left: 70%;
+      animation-delay: 5s;
+    }
+
+    .blob:nth-child(3) {
+      width: 500px;
+      height: 500px;
+      background: #29abe2;
+      top: 50%;
+      left: -150px;
+      animation-delay: 10s;
+    }
+
+    @keyframes moveBlobs {
+      0% { transform: translateY(0px) translateX(0px) scale(1); }
+      100% { transform: translateY(-50px) translateX(50px) scale(1.2); }
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      margin: 40px 0;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 25px 30px;
+      width: 90%;
+      max-width: 500px;
+      margin: 20px auto;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      z-index: 1;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="file"] {
+      color: white;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 5px;
+    }
+
+    .button {
+      background: #5c7cfa;
+      color: white;
+      padding: 8px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    .button:hover {
+      background: #4263eb;
+    }
+
+    .edit-btn {
+      background: #ff914d;
+    }
+
+    .edit-btn:hover {
+      background: #e66e29;
+    }
+
+    .delete-btn {
+      background: #ff4d4d;
+    }
+
+    .delete-btn:hover {
+      background: #d11a2a;
+    }
+
+    .file-list, .description {
+      font-size: 0.95rem;
+      color: #e0e0e0;
+      margin-top: 10px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Blobs Background -->
+  <div class="animated-blobs">
+    <div class="blob"></div>
+    <div class="blob"></div>
+    <div class="blob"></div>
+  </div>
+
+  <h1>MARKDOWN PREVIEWER</h1>
+
+  <div class="glass-card">
+    <div class="section-title">Upload a Markdown File</div>
+    <div class="input-row">
+      <input type="file" id="upload" accept=".md" />
+      <button class="button" onclick="uploadFile()">Upload</button>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <div class="section-title">Choose an Existing File</div>
+    <div class="file-list">Loading files...</div>
+  </div>
+
+  <div class="glass-card">
+    <div class="section-title">Markdown Content</div>
+    <div class="action-row">
+      <button class="button edit-btn">Edit</button>
+      <button class="button delete-btn">Delete</button>
+    </div>
+    <p class="description">Select a Markdown file or upload one to see its beautiful preview here.</p>
+  </div>
+
+  <script>
+    function uploadFile() {
+      const input = document.getElementById("upload");
+      if (!input.files.length) {
+        alert("Please select a Markdown file to upload.");
+        return;
+      }
+      alert("Markdown file uploaded: " + input.files[0].name);
+      // Extend this logic to parse and show preview
+    }
+  </script>
+</body>
+</html>
