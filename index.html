@@ -260,7 +260,7 @@
         }
         preview.innerHTML = '<p class="text-gray-200 text-lg">Loading preview...</p>';
         try {
-            const res = await fetch(`/${filename}`);
+            const res = await fetch(`https://markdown-preview-z4s9.onrender.com/${filename}`);
             if (!res.ok) {
                 if (res.status === 404) {
                     throw new Error(`File not found: ${filename}`);
@@ -300,7 +300,7 @@
             const formData = new FormData();
             formData.append('file', file);
             try {
-                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const res = await fetch('https://markdown-preview-z4s9.onrender.com/upload', { method: 'POST', body: formData });
                 if (!res.ok) {
                     const errorText = await res.text();
                     throw new Error(`Upload failed: ${errorText || res.statusText}`);
@@ -345,7 +345,7 @@
             }
             updateMessage(actionMsgId, 'Loading file content for editing...', 'info');
             try {
-                const res = await fetch(`/${filename}`);
+                const res = await fetch(`https://markdown-preview-z4s9.onrender.com/${filename}`);
                 if (!res.ok) throw new Error("Could not load file content.");
                 originalMd = await res.text();
                 editor.value = originalMd;
@@ -371,7 +371,7 @@
             saveBtn.disabled = true;
             updateMessage(actionMsgId, 'Saving changes...', 'info');
             try {
-                const res = await fetch('/edit', {
+                const res = await fetch('https://markdown-preview-z4s9.onrender.com/edit', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ filename, content: newContent })
@@ -398,7 +398,7 @@
             deleteBtn.disabled = true;
             updateMessage(actionMsgId, 'Deleting file...', 'info');
             try {
-                const res = await fetch('/delete', {
+                const res = await fetch('https://markdown-preview-z4s9.onrender.com/delete', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ filename })
